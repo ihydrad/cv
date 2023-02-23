@@ -1,11 +1,18 @@
 import cv2
+import os
 
-# vcap = cv2.VideoCapture("rtsp://admin:admin@192.168.101.8:554/ch0_0.264")
-vcap = cv2.VideoCapture(0)
+RTSP_URL = "rtsp://admin:admin@192.168.101.8:554/ch0_0.264"
+os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;udp'
+cap = cv2.VideoCapture(RTSP_URL, cv2.CAP_FFMPEG)
+# vcap = cv2.VideoCapture(0)
 faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+if not cap.isOpened():
+    print('Cannot open RTSP stream')
+    exit(-1)
+
 while True:
-    ret, frame = vcap.read()
+    _, frame = cap.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -20,10 +27,10 @@ while True:
     for (x, y, w, h) in faces:
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-    cv2.imshow('Video', frame)
+    cv2.imshow('RTSP stream', frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) == 27:
         break
 
-vcap.release()
+cap.release()
 cv2.destroyAllWindows()
